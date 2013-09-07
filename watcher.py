@@ -27,24 +27,22 @@ def get_hostname(ip):
 def persistent_pkt_info(filename, ** kwargs):
 	with open(filename, 'a+') as csvfile:
 		csv_w = csv.writer(csvfile)
-		dict_t = json.dumps(dict(kwargs))
-		csv_w.writerow([kwargs['hwsrc'],  dict_t])
+		csv_w.writerow([kwargs['hwsrc'], json.dumps(kwargs)])
 
 def handle_new_pkt(pkt, ** kwargs):
 	hwsrc = kwargs['hwsrc']
 	src_ip = pkt[ARP].psrc
-	org = "NA"
+	hostname = get_hostname(src_ip)
 	try:
-		oui = EUI(hwsrc).oui
-		org = oui.registration().org
+		org = EUI(hwsrc).oui.registration().org
 	except netaddr.core.NotRegisteredError:
-		pass
-	print src_ip, hwsrc, get_hostname(src_ip), org
+		org = 'NA'
+	print src_ip, hwsrc, hostname, org
 	filename = kwargs.get('filename', None)
 	if filename:
 		cur_time = time.time()
 		persistent_pkt_info(filename, hwsrc=hwsrc, src_ip=src_ip,
-			time=cur_time, org=org)
+			time=cur_time, org=org, hostname=hostname)
 
 class SimpleNetworkMonitor(object):
 	def __init__(self, filename, ** kwargs):
