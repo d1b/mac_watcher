@@ -90,16 +90,16 @@ def parse_args():
 	parser = argparse.ArgumentParser(description="SimpleNetworkMonitor")
 	parser.add_argument("-f", "--file", dest="filename", default=
 		os.path.expanduser("~/.simple_arp_watcher"),
-		help="Filename to load and store arp and ip entries into." +
+		help="Filename to load and store arp and ip entries into."
 		"\nDefaults to ~/.simple_arp_watcher")
 	parser.add_argument("-s", "--show-known-entries", dest="show_known",
-		help="Show known mac address network information", action=
-		"store_true")
+		help="Show known mac address network information.",
+		action="store_true")
 	parser.add_argument("-i", "--ip-monitor", dest="ip_monitor",
-		action="store_true", help="Alert on mac & ip address change." +
+		action="store_true", help="Alert on mac & ip address change."
 		"\nCurrently This option does nothing." )
 	parser.add_argument("-e", "--email", dest="email",
-		help="Email address to notify on network changes." +
+		help="Email address to notify on network changes."
 		"\n This is not required and it currently does nothing.")
 	args = parser.parse_args()
 	return args
@@ -111,7 +111,7 @@ def main():
 		simpNetMon.show_known()
 		return
 	sniff(prn=simpNetMon.arp_monitor_callback, filter='arp',
-		store=0, iface="eth0")
+		store=0, iface='eth0')
 
 if __name__ =="__main__":
 	main()
