@@ -1,29 +1,28 @@
 #!/usr/bin/python
-__version__="0.0.1"
-__author__="david"
-__email__="db@d1b.org"
+__version__ = "0.0.1"
+__author__ = "david"
+__email__ = "db@d1b.org"
 
 import argparse
 import csv
 import json
 from multiprocessing import Process
+import os
+import socket
+import time
+
 import netaddr
 from netaddr import EUI
-import os
-from scapy.all import *
-import signal
-import socket
-import sys
-import time
+from scapy.all import sniff, ARP
+
 
 def get_hostname(ip):
 	try:
 		ret = socket.gethostbyaddr(ip)
 		if ret:
 			return ret[0]
-	except socket.error, e:
-		pass
-	return ""
+	except socket.error:
+		return ""
 
 def persistent_pkt_info(filename, ** kwargs):
 	with open(filename, 'a+') as csvfile:
@@ -38,16 +37,14 @@ def handle_new_pkt(pkt, ** kwargs):
 	try:
 		oui = EUI(hwsrc).oui
 		org = oui.registration().org
-	except netaddr.core.NotRegisteredError, e:
+	except netaddr.core.NotRegisteredError:
 		pass
 	print src_ip, hwsrc, get_hostname(src_ip), org
-
-	try:
-		filename = kwargs['filename']
+	filename = kwargs.get('filename', None)
+	if filename:
 		cur_time = time.time()
-		persistent_pkt_info(filename, hwsrc=hwsrc, src_ip=src_ip, time=cur_time, org=org)
-	except KeyError:
-		pass
+		persistent_pkt_info(filename, hwsrc=hwsrc, src_ip=src_ip,
+			time=cur_time, org=org)
 
 class SimpleNetworkMonitor(object):
 	def __init__(self, filename, ** kwargs):
@@ -66,7 +63,7 @@ class SimpleNetworkMonitor(object):
 		return csv.reader(self._get_csv_file())
 
 	def load_known_from_persist(self):
-		self.known_mac = set([row[0] for row in self.__get_csv_reader() \
+		self.known_mac = set([row[0] for row in self.__get_csv_reader()
 			if row])
 
 	def arp_monitor_callback(self, pkt):
@@ -76,8 +73,7 @@ class SimpleNetworkMonitor(object):
 		if self.is_mac_known(hwsrc):
 			return
 		self.known_mac.add(hwsrc)
-
-		p = Process(target=handle_new_pkt, args=(pkt), \
+		p = Process(target=handle_new_pkt, args=(pkt),
 			kwargs={'hwsrc' : hwsrc, 'filename' : self.filename})
 		p.start()
 
@@ -94,19 +90,18 @@ class SimpleNetworkMonitor(object):
 
 def parse_args():
 	parser = argparse.ArgumentParser(description="SimpleNetworkMonitor")
-	parser.add_argument("-f", "--file", dest="filename", default=\
-		os.path.expanduser("~/.simple_arp_watcher"), \
-		help="Filename to load and store arp and ip entries into." + \
+	parser.add_argument("-f", "--file", dest="filename", default=
+		os.path.expanduser("~/.simple_arp_watcher"),
+		help="Filename to load and store arp and ip entries into." +
 		"\nDefaults to ~/.simple_arp_watcher")
-	parser.add_argument("-s", "--show-known-entries", dest="show_known", \
-		help="Show known mac address network information", action=\
+	parser.add_argument("-s", "--show-known-entries", dest="show_known",
+		help="Show known mac address network information", action=
 		"store_true")
-
-	parser.add_argument("-i", "--ip-monitor", dest="ip_monitor", \
-		action="store_true", help="Alert on mac & ip address change." + \
+	parser.add_argument("-i", "--ip-monitor", dest="ip_monitor",
+		action="store_true", help="Alert on mac & ip address change." +
 		"\nCurrently This option does nothing." )
-	parser.add_argument("-e", "--email", dest="email", \
-		help="Email address to notify on network changes." + \
+	parser.add_argument("-e", "--email", dest="email",
+		help="Email address to notify on network changes." +
 		"\n This is not required and it currently does nothing.")
 	args = parser.parse_args()
 	return args
@@ -117,7 +112,8 @@ def main():
 	if args.show_known:
 		simpNetMon.show_known()
 		return
-	sniff(prn=simpNetMon.arp_monitor_callback, filter='arp', store=0)
+	sniff(prn=simpNetMon.arp_monitor_callback, filter='arp',
+		store=0, iface="eth0")
 
 if __name__ =="__main__":
 	main()
