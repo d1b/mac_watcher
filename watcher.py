@@ -95,7 +95,9 @@ def parse_args():
 	parser.add_argument("-s", "--show-known-entries", dest="show_known",
 		help="Show known mac address network information.",
 		action="store_true")
-	parser.add_argument("-i", "--ip-monitor", dest="ip_monitor",
+	parser.add_argument("-if", "--interface", dest="interface",
+		help="The interface to listen on.", default="eth0")
+	parser.add_argument('-mi', "--monitor-ip", dest="ip_monitor",
 		action="store_true", help="Alert on mac & ip address change."
 		"\nCurrently This option does nothing." )
 	parser.add_argument("-e", "--email", dest="email",
@@ -111,7 +113,7 @@ def main():
 		simpNetMon.show_known()
 		return
 	sniff(prn=simpNetMon.arp_monitor_callback, filter='arp',
-		store=0, iface='eth0')
+		store=0, iface=args.interface)
 
 if __name__ =="__main__":
 	main()
