@@ -1,8 +1,5 @@
 #!/usr/bin/python
-__version__ = "0.0.1"
-__author__ = "david"
-__email__ = "db@d1b.org"
-
+from __future__ import print_function
 import argparse
 import csv
 import json
@@ -39,7 +36,7 @@ def handle_new_pkt(pkt, ** kwargs):
         org = EUI(hwsrc).oui.registration().org
     except netaddr.core.NotRegisteredError:
         org = 'NA'
-    print src_ip, hwsrc, hostname, org
+    print(src_ip, hwsrc, hostname, org)
     filename = kwargs.get('filename', None)
     if filename:
         cur_time = time.time()
@@ -88,7 +85,7 @@ class SimpleNetworkMonitor(object):
         for row in self.__get_csv_reader():
             if not row:
                 continue
-            print row[0], json.loads(row[1])
+            print(row[0], json.loads(row[1]))
 
 
 def parse_args():
