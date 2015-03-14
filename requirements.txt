@@ -1,2 +1,2 @@
-git+ssh://git@github.com:drkjam/netaddr.git#egg=netaddr
-git+ssh://git@github.com:d1b/scapy.git#scapy
+netaddr==0.7.13
+scapy==2.3.1
